@@ -16,6 +16,7 @@
     dispatch_once(&onceToken, ^{
         swizzling_exchangeMethod([UITableView class], @selector(initWithFrame:style:), @selector(swizzling_initWithFrame:style:));
         swizzling_exchangeMethod([UITableView class], @selector(initWithCoder:), @selector(swizzling_initWithCoder:));
+        swizzling_exchangeMethod([UITableView class], @selector(layoutSubviews), @selector(swizzling_layoutSubviews));
     });
 }
 
@@ -43,17 +44,23 @@
     }
 }
 
+- (void)swizzling_layoutSubviews {
+    if (self.superview.window) {
+        [self swizzling_layoutSubviews];
+    }
+}
+
 - (void)cornerRadiusWithCell:(UITableViewCell *)cell
                      radius:(NSInteger)radius
                   indexPath:(nonnull NSIndexPath *)indexPath {
     NSInteger rowsNum = [self numberOfRowsInSection:indexPath.section];
     if (rowsNum == 1) {
-        [cell radiusWithRadius:10 corner:UIRectCornerAllCorners];
+        [cell radiusWithRadius:radius corner:UIRectCornerAllCorners];
     } else {
         if (indexPath.row == 0) {
-            [cell radiusWithRadius:10 corner:UIRectCornerTopLeft|UIRectCornerTopRight];
+            [cell radiusWithRadius:radius corner:UIRectCornerTopLeft|UIRectCornerTopRight];
         } else if (indexPath.row == rowsNum - 1) {
-            [cell radiusWithRadius:10 corner:UIRectCornerBottomLeft|UIRectCornerBottomRight];
+            [cell radiusWithRadius:radius corner:UIRectCornerBottomLeft|UIRectCornerBottomRight];
         } else {
             [cell radiusWithRadius:0 corner:UIRectCornerBottomLeft|UIRectCornerBottomRight];
         }

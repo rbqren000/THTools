@@ -9,6 +9,7 @@
 #import "UIViewController+Swizzling.h"
 #import "SwizzlingDefine.h"
 #import "UINavigationBar+Alpha.h"
+#import "THAppMacro.h"
 
 @interface UIViewController ()
 @property (nonatomic, assign) CGFloat defaultAlphaForNaviBar; //Navibar默认透明度
@@ -50,11 +51,15 @@
 }
 
 - (void)swizzling_viewWillAppear:(BOOL)animated {
-    NSLog(@"currentVcIs:%@", self.class);
+    
     if (self.isUseClearBar) {
         [self setAlphaForNaviBar:0];
     } else {
         [self setAlphaForNaviBar:self.defaultAlphaForNaviBar];
+    }
+    if (![NSStringFromClass(self.class) containsString:@"UI"] &&
+        ![NSStringFromClass(self.class) containsString:@"PU"]) {
+        NSLog(@"currentVcIs:%@", self.class);
     }
     [self swizzling_viewWillAppear:animated];
 }
@@ -67,7 +72,7 @@
 #pragma mark - 公共方法
 -(void)setNaviBarTintColor:(UIColor *)tintColor titleColor:(UIColor *)titleColor {
     if (self.navigationController) {
-        if (@available(iOS 15.0, *)) {
+        if (@available(iOS 13.0, *)) {
             UINavigationBarAppearance *barApp = self.navigationController.navigationBar.standardAppearance ?: [UINavigationBarAppearance new];
             barApp.titleTextAttributes = @{NSForegroundColorAttributeName : titleColor};
             self.navigationController.navigationBar.scrollEdgeAppearance = barApp;
@@ -90,6 +95,27 @@
     self.defaultAlphaForNaviBar = alpha;
 }
 
+
+-(NSString *)backImgName {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+-(void)setBackImgName:(NSString *)backImgName{
+    objc_setAssociatedObject(self, @selector(backImgName), backImgName, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
+    UIImage * buttonNormal = [[UIImage imageNamed:backImgName] imageWithRenderingMode:UIImageRenderingModeAutomatic];
+    if (@available(iOS 13.0, *)) {
+        UINavigationBarAppearance * barApp = self.navigationController.navigationBar.standardAppearance ?: [UINavigationBarAppearance new];
+        [barApp setBackIndicatorImage:buttonNormal transitionMaskImage:buttonNormal];
+        self.navigationController.navigationBar.scrollEdgeAppearance = barApp;
+        self.navigationController.navigationBar.standardAppearance = barApp;
+    } else {
+        [self.navigationController.navigationBar setBackIndicatorImage:buttonNormal];
+        [self.navigationController.navigationBar setBackIndicatorTransitionMaskImage:buttonNormal];
+    }
+    UIBarButtonItem * backItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
+    self.navigationItem.backBarButtonItem = backItem;
+}
 
 -(BOOL)isUseClearBar {
     return [objc_getAssociatedObject(self, _cmd) boolValue];

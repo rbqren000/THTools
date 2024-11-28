@@ -24,7 +24,7 @@ static id instance; // 单例（全局变量）
 //        instance = [self unarchive];
 //    });
 //    return instance;
-    
+
     @synchronized (self) {
         instance = objc_getAssociatedObject(self, InstanceKey);
         if (!instance) {
@@ -34,14 +34,18 @@ static id instance; // 单例（全局变量）
     return instance;
 }
 
-///** alloc 会调用allocWithZone方法 .h中直接废弃init和new方法，可不重写*/
-//+ (instancetype)allocWithZone:(struct _NSZone *)zone {
-//    // 使用GCD确保只进行一次
-//    static dispatch_once_t onceToken;
-//    dispatch_once(&onceToken, ^{
-//        instance = [super allocWithZone:zone];
-//    });
-//}
+//** alloc 会调用allocWithZone方法 .h中直接废弃init和new方法，可不重写
++ (instancetype)allocWithZone:(struct _NSZone *)zone {
+    /** 可继承单例写法 */
+    @synchronized (self) {
+        instance = objc_getAssociatedObject(self, InstanceKey);
+        if (!instance) {
+            instance = [super allocWithZone:zone];
+            objc_setAssociatedObject(self, InstanceKey, instance, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        }
+    }
+    return instance;
+}
 
 ///** copy在底层 会调用copyWithZone方法 */
 - (id)copyWithZone:(struct _NSZone *)zone {
@@ -68,9 +72,8 @@ static id instance; // 单例（全局变量）
 + (instancetype)unarchive {
     id obj = [NSKeyedUnarchiver unarchiveObjectWithFile:[self archivePath]];
     if (!obj) {
-        obj = [[super allocWithZone:NULL] init];
+        obj = [[self alloc] init];
     }
-    objc_setAssociatedObject(self, InstanceKey, obj, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     return obj;
 }
 

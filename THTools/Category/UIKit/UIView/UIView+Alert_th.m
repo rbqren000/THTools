@@ -8,6 +8,7 @@
 
 #import "UIView+Alert_th.h"
 #import "UIView+AutoLayout_th.h"
+#import "THAppMacro.h"
 
 @interface THShowAlertView : UIView
 
@@ -265,7 +266,7 @@
     return NO;
 }
 
-- (void)hideView
+- (void)hideTheView
 {
     if ([self isShowInWindow]) {
         [self hideInWindow];

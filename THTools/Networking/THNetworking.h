@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 #if __has_include(<AFNetworking/AFNetworking.h>)
 #import <AFNetworking/AFNetworking.h>
 #else
@@ -133,6 +132,20 @@ typedef void (^WXBUploadProgress)(int64_t bytesWritten,
                            success:(SuccessBlock)success
                               fail:(FailureBlock)fail;
 
++ (WXBURLSessionTask *)deleteWithUrl:(NSString *)url
+                              params:(NSDictionary *)params
+                             success:(SuccessBlock)success
+                                fail:(FailureBlock)fail;
+
++ (WXBURLSessionTask *)putWithUrl:(NSString *)url
+                              params:(NSDictionary *)params
+                             success:(SuccessBlock)success
+                                fail:(FailureBlock)fail;
+
++ (WXBURLSessionTask *)patchWithUrl:(NSString *)url
+                              params:(NSDictionary *)params
+                             success:(SuccessBlock)success
+                                fail:(FailureBlock)fail;
 /**
  *  图片上传接口，若不指定baseurl，可传完整的url
  *
